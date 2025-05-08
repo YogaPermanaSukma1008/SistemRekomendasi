@@ -11,9 +11,13 @@ Sebuah platform distribusi film digital baru yang diluncurkan di Indonesia beber
 Fenomena ini dikenal sebagai paradox of choice—di mana semakin banyak pilihan yang tersedia, semakin besar pula kebingungan yang dialami pengguna. Konsep ini diperkenalkan oleh psikolog Barry Schwartz dalam bukunya "The Paradox of Choice: Why More Is Less", yang menjelaskan bahwa terlalu banyak pilihan dapat menyebabkan kecemasan, penundaan keputusan, bahkan penyesalan setelah memilih. Dalam konteks platform film digital, hal ini berpotensi menurunkan kepuasan pengguna dan meningkatkan risiko churn (berhentinya pelanggan).
 Masalah ini semakin diperparah dengan tidaknya tersedia sistem rekomendasi yang personal. Saat ini, film yang ditampilkan di halaman utama cenderung didasarkan pada popularitas umum, bukan preferensi individual pengguna. Akibatnya, pengalaman menonton menjadi kurang relevan dan kurang menarik, serta tidak mendorong eksplorasi konten yang lebih luas. Sebagai pembanding, platform seperti Netflix menyatakan bahwa sistem rekomendasi yang baik mampu menghemat lebih dari $1 miliar setiap tahun dengan cara mengurangi tingkat churn melalui peningkatan pengalaman pengguna (Qin, 2024).
 
+Referensi : 
+Schwartz, Barry (2004). The Paradox Of Choice. New York, United States: Harper Perennial. ISBN 0-06-000568-8.
+Qin, Jesse. (2024, March 15). Netflix's Billion Dollar Secret: How Recommendation Systems Work. LinkedIn Pulse. https://www.linkedin.com/pulse/netflixs-billion-dollar-secret-how-recommendation-systems-qin-phd-7zece/
+
 ### Problem Statement
 Dari studi kasus ini, pernyataan masalah dapat dirumuskan sebagai berikut: 
-1.	Pengguna kesulitan menemukan film yang sesuai dengan preferensinya akibat banyaknya pilihan film yang tersedia di platform streaming.
+1.	Pengguna kesulitan menemukan film yang sesuai dengan preferensinya akibat banyaknya pilihan film yang tersedia di platform streaming. 
 2.	Sistem rekomendasi yang telah dibangun ternyata tidak sepenuhnya tepat merekomendasikan film yang sesuai dengan preferensi pengguna. 
 
 ### Goals
@@ -22,7 +26,7 @@ Dari studi kasus ini, pernyataan masalah dapat dirumuskan sebagai berikut:
 
 ### Solution Statement:
 1.	Untuk mengatasi masalah 1, maka dibangun sistem rekomendasi film dengan pendekatan content based filtering. Sistem ini menggunakan TF-IDF Vectorizer pada fitur genres untuk menghitung kemiripan antar film dengan Cosine Similarity (Shrivastava dan Sisodia, 2019).
-2.	Menggabungkan sistem rekomendasi content based filtering dengan pendekatan collaborative filtering atau selanjutnya disebut sebagai Hybrid model yang memungkinkan rekomendasi berdasarkan kemiripan antar pengguna dan konten film sekaligus.
+2.	Jika pendekatan content based filtering menghasilkan rekomendasi yang kurang baik maka akan digunakan sistem rekomendasi dengan pendekatan collaborative filtering dengan beberapa metode seperti SVD atau KNN. 
 
 ## Data Understanding
 Dataset yang digunakan berasal dari (Kaggle)[ https://www.kaggle.com/datasets/parasharmanas/movie-recommendation-system/data]. Dataset ini berisi dua dataset yaitu dataset Movies dan Ratings. 
@@ -35,17 +39,20 @@ Sementara itu, pada dataset rating terdapat beberapa fitur yaitu:
 2.	Movieid : kode nomor identitas movie
 3.	Rating : tingkat kepuasan pengguna yang dijelaskan menggunakan data ordinal (0,5 – 5)
 4.	Timestamps : urutan karakter atau informasi yang menunjukkan kapan suatu peristiwa terjadi. 
-Berdasarkan hasil dari data info, dataset movies berjumlah 62423 baris dengan 3 kolom, sedangkan dataset rating berjumlah 25000095 baris dengan 4 kolom. 
+Berdasarkan hasil dari data info, dataset movies berjumlah 62423 baris dengan 3 kolom, sedangkan dataset rating berjumlah 25000095 baris dengan 4 kolom.
+Selain pemahaman akan data, pada proses ini dilakukan pengecekan data dari data missing dan duplikat. Berdasarkan hasil proses data wrangling tidak ditemukan adanya missing data dan duplikat data pada dataset sehingga tidak diperlukan proses penanganan data hilang dan duplikat. Proses data cleaning dilakukan dengan membersihkan kolom nama film dari value yang bukan angka atau huruf sehingga data siap digunakan pada proses EDA. 
 
 ### EDA 
 EDA (Exploratory Data Analysis) adalah proses eksplorasi awal terhadap data sebelum modeling, dengan tujuan memahami struktur, pola, anomali, dan hubungan antar variabel dalam dataset. Dalam hal ini, EDA yang digunakan yaitu:
-1.	Pemeriksaan data missing dan data duplikat pada masing-masing dataset. 
-2.	Membersihkan nama film dari value yang bukan angka atau huruf.
-3.	Menampilkan unique value pada kolom genre. 
-4.	Menghapus value no genre listed karena tidak relevan. 
-5.	Menampilkan film dengan penonton terbanyak (populer) dengan bar chart
-6.	Menampilkan jumlah film berdasarkan genre terbanyak dengan bar chart. 
-7.	Penggabungan dataset untuk melihat film dengan rating tertinggi dan rating terendah. 
+1.	Menampilkan unique value pada kolom genre. 
+2.	Menghapus value no genre listed karena tidak relevan. 
+3.	Menampilkan film dengan penonton terbanyak (populer) dengan bar chart
+4.	Menampilkan jumlah film berdasarkan genre dengan bar chart. 
+5.	Penggabungan dataset untuk melihat film dengan rating tertinggi dan rating terendah.
+
+Berdasarkan proses EDA, unik value pada kolom genre berjumlah 20, satu diantaranya tertulis no listed genre. Oleh karena itu diperlukan pengananan berupa penghapusan baris yang memiliki data no listed genre pada kolom genre. Proses ini dilakukan agar film yang direkomendasikan sesuai dengan genre yang diminati pengguna. Adanya data no listed genre akan sangat membingungkan sehingga perlu dihapus. Berdasarkan tahapan nomor 3 ditemukan bahwa film berjudul forest gump merupakan film dengan penonton terbanyak hingga 80.000 rating yang diberikan. Sementara itu genre paling banyak adalah genre drama dengan lebih dari 25000 judul film. Penggabungan dataset diperlukan untuk melihat film dengan raating tertinggi dan terendah karena untuk menampilkan bar chart yang demikian diperlukan kolom tittle pada dataset movies dan kolom rating pada dataset ratings. Ditemukan bahwa rata - rata tertinggi pada film mencapai 5 sementara terendah adalah 0.5. 
+   
+
 ### Data Preparation
 1.	Membersihkan kolom tittle dari double spasi, menghilangkan teks selain huruf. 
 2.	Menghapus kolom yang tidak relevan, dalam hal ini kolom yang dimaksud adalah kolom index. 
